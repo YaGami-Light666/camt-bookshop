@@ -6,7 +6,7 @@ Name: **TODO(USER)**
 
 Repository: <https://github.com/YaGami-Light666/camt-bookshop>
 
-Production URL: **TODO after the first production deployment**
+Production URL: <https://camt-bookshop-lz482534829-9647.vercel.app>
 
 ## 1. Pipeline at a glance
 
@@ -41,7 +41,7 @@ The following evidence must be added after the GitHub and Vercel account steps h
 | AC-04.6 | Warm-cache PR duration | TODO after second PR run |
 | AC-05.1–3 | Branch protection / ruleset | TODO(USER): ruleset screenshot |
 | AC-05.4 | PR blocked by a red required check | TODO after deliberate red-gate experiment |
-| AC-06.3–4 | Green production deployment and verification | TODO after first green main run |
+| AC-06.3–4 | Green production deployment and verification | [Main pipeline run 41344916675](https://github.com/YaGami-Light666/camt-bookshop/actions/runs/41344916675) |
 | AC-06.7 | Red main test with deployment skipped | TODO after PR-42 is merged |
 | AC-07.2 | Manual nightly runs for production, URL and local | TODO after three manual runs |
 | AC-08.2 | Quarantine issue | <https://github.com/YaGami-Light666/camt-bookshop/issues/1> |
@@ -51,7 +51,7 @@ The following evidence must be added after the GitHub and Vercel account steps h
 | Run | Cold cache | Warm cache | Budget | Within? |
 |---|---:|---:|---:|---|
 | PR gate | TODO | TODO | 8 min | TODO |
-| Main pipeline | TODO | TODO | 10 min | TODO |
+| Main pipeline | 2 min 6 sec | TODO | 10 min | Yes |
 | Nightly, production | TODO | TODO | 20 min | TODO |
 | Nightly, local | TODO | TODO | 20 min | TODO |
 
