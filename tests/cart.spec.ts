@@ -32,7 +32,7 @@ test.describe('Cart', () => {
   });
 
   // Boundary value: the discount rule is "2,000 THB or more".
-  test('member discount applies at exactly 2,000 THB', async ({ page }) => {
+  test('member discount applies at exactly 2,000 THB', { tag: '@smoke' }, async ({ page }) => {
     await addToCart(page, 'Clean Code');   //  850
     await addToCart(page, 'Refactoring');  // 1150 = 2000
     await page.getByRole('link', { name: /Cart/ }).click();
