@@ -6,7 +6,7 @@ Name: **TODO(USER)**
 
 Repository: <https://github.com/YaGami-Light666/camt-bookshop>
 
-Production URL: **TODO after the first production deployment**
+Production URL: <https://camt-bookshop-lz482534829-9647.vercel.app>
 
 ## 1. Pipeline at a glance
 
@@ -37,11 +37,11 @@ The following evidence must be added after the GitHub and Vercel account steps h
 |---|---|---|
 | AC-03.2 | Vercel deployments were made by Actions | TODO(USER): Vercel deployment-list screenshot |
 | AC-03.4 | Vercel Authentication on and automation bypass created | TODO(USER): protection-settings screenshot |
-| AC-04.3–4 | Green PR gate with preview URL | TODO after first green PR run |
-| AC-04.6 | Warm-cache PR duration | TODO after second PR run |
+| AC-04.3–4 | Green PR gate with preview URL | [PR gate run 41345288588](https://github.com/YaGami-Light666/camt-bookshop/actions/runs/41345288588) · [Preview](https://camt-bookshop-huxv4f7nf-lz482534829-9647.vercel.app) |
+| AC-04.6 | Warm-cache PR duration | [2 min 7 sec](https://github.com/YaGami-Light666/camt-bookshop/actions/runs/41345288588) |
 | AC-05.1–3 | Branch protection / ruleset | TODO(USER): ruleset screenshot |
 | AC-05.4 | PR blocked by a red required check | TODO after deliberate red-gate experiment |
-| AC-06.3–4 | Green production deployment and verification | TODO after first green main run |
+| AC-06.3–4 | Green production deployment and verification | [Main pipeline run 41344916675](https://github.com/YaGami-Light666/camt-bookshop/actions/runs/41344916675) |
 | AC-06.7 | Red main test with deployment skipped | TODO after PR-42 is merged |
 | AC-07.2 | Manual nightly runs for production, URL and local | TODO after three manual runs |
 | AC-08.2 | Quarantine issue | <https://github.com/YaGami-Light666/camt-bookshop/issues/1> |
@@ -50,8 +50,8 @@ The following evidence must be added after the GitHub and Vercel account steps h
 
 | Run | Cold cache | Warm cache | Budget | Within? |
 |---|---:|---:|---:|---|
-| PR gate | TODO | TODO | 8 min | TODO |
-| Main pipeline | TODO | TODO | 10 min | TODO |
+| PR gate | TODO | 2 min 7 sec | 8 min | Yes |
+| Main pipeline | TODO | 2 min 6 sec | 10 min | Yes |
 | Nightly, production | TODO | TODO | 20 min | TODO |
 | Nightly, local | TODO | TODO | 20 min | TODO |
 
