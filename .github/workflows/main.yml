@@ -87,6 +87,7 @@ jobs:
           echo "$deployment_url" >> "$GITHUB_STEP_SUMMARY"
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          NITRO_PRESET: vercel
           NUXT_PUBLIC_APP_VERSION: ${{ github.sha }}
 
   verify-production:
