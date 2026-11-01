@@ -1,0 +1,187 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: '0 20 * * *'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Target to test
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - url
+          - local
+      url:
+        description: Deployment URL when target is url
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  resolve-target:
+    runs-on: ubuntu-latest
+    outputs:
+      base-url: ${{ steps.resolve.outputs.base-url }}
+      target-name: ${{ steps.resolve.outputs.target-name }}
+    steps:
+      - name: Resolve the selected target
+        id: resolve
+        run: |
+          case "$TARGET" in
+            ""|production)
+              if [ -z "$PRODUCTION_URL" ]; then
+                echo "PRODUCTION_URL repository variable is not set" >&2
+                exit 1
+              fi
+              echo "base-url=$PRODUCTION_URL" >> "$GITHUB_OUTPUT"
+              echo "target-name=production" >> "$GITHUB_OUTPUT"
+              ;;
+            url)
+              if [ -z "$INPUT_URL" ]; then
+                echo "A deployment URL is required when target=url" >&2
+                exit 1
+              fi
+              echo "base-url=$INPUT_URL" >> "$GITHUB_OUTPUT"
+              echo "target-name=url" >> "$GITHUB_OUTPUT"
+              ;;
+            local)
+              echo "base-url=" >> "$GITHUB_OUTPUT"
+              echo "target-name=local" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unsupported target: $TARGET" >&2
+              exit 1
+              ;;
+          esac
+        env:
+          TARGET: ${{ inputs.target }}
+          INPUT_URL: ${{ inputs.url }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+
+  matrix-tests:
+    needs: resolve-target
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Restore Playwright browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install browser and system dependencies
+        run: npx playwright install --with-deps "$BROWSER"
+        env:
+          BROWSER: ${{ matrix.browser }}
+
+      - name: Run full-suite shard
+        run: npx playwright test --project="$BROWSER" --shard="$SHARD/3" --grep-invert @quarantine
+        env:
+          BASE_URL: ${{ needs.resolve-target.outputs.base-url }}
+          BROWSER: ${{ matrix.browser }}
+          SHARD: ${{ matrix.shard }}
+          TEST_USER: ${{ secrets.TEST_USER }}
+          TEST_PASS: ${{ secrets.TEST_PASS }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+
+      - name: Upload blob report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.browser }}-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 7
+
+  quarantine-watch:
+    needs: resolve-target
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Restore Playwright browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-chromium-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium and system dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Run quarantined tests without blocking the workflow
+        run: npx playwright test --project=chromium --grep @quarantine
+        env:
+          BASE_URL: ${{ needs.resolve-target.outputs.base-url }}
+          TEST_USER: ${{ secrets.TEST_USER }}
+          TEST_PASS: ${{ secrets.TEST_PASS }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+
+      - name: Upload quarantine report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: quarantine-watch-report
+          path: playwright-report/
+          retention-days: 14
+
+  merge-reports:
+    needs: [resolve-target, matrix-tests]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download shard reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge shard reports
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ needs.resolve-target.outputs.target-name }}-html-report
+          path: playwright-report/
+          retention-days: 30
