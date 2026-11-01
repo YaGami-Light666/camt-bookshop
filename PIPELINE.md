@@ -1,8 +1,8 @@
 # PIPELINE.md — CAMT Bookshop
 
-Student ID: **TODO(USER)**
+Student ID: **692131008**
 
-Name: **TODO(USER)**
+Name: **ZIXIAN SHU**
 
 Repository: <https://github.com/YaGami-Light666/camt-bookshop>
 
